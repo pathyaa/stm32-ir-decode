@@ -28,10 +28,11 @@ void irNecInit()
 
 void irNecStart()
 {
-	nec.state = NEC_ADDR;
+	nec.state = NEC_FORMAT;
 	HAL_TIM_IC_Stop_DMA(&htim2, TIM_CHANNEL_1);
 	HAL_TIM_IC_Stop_DMA(&htim2, TIM_CHANNEL_2);
-
+	hdma_tim2_ch1.Init.Mode = DMA_CIRCULAR;
+	hdma_tim2_ch2_ch4.Init.Mode = DMA_CIRCULAR;
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)nec.edge_falling, MAX_NEC_CNT);
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)nec.edge_rising, MAX_NEC_CNT);
 }
@@ -66,7 +67,7 @@ void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			}
 		break;
 
-		case NEC_ADDR :
+		case NEC_FORMAT :
 			nec.taskFlag = true;
 			break;
 		}
@@ -76,9 +77,7 @@ void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 bool irNecTask()
 {
 	if (irNecData())
-	{
-		return irNecDecode();
-	}
+	return irNecDecode();
 }
 
 bool irNecData()
@@ -98,17 +97,17 @@ bool irNecData()
 					nec.raw_capture[nec.cap_cnt] = nec.edge_rising[nec.cap_cnt] - nec.edge_falling[nec.cap_cnt];
 				}
 			}
-			for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt+=2)
+			for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT+1; nec.cap_cnt+=2)
 			{
-					if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
-					{
-						nec.data[i] = 1;
-					}
-					else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
-					{
-						nec.data[i] = 0;
-					}
-					i++;
+				if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
+				{
+					nec.data[i] = 1;
+				}
+				else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
+				{
+					nec.data[i] = 0;
+				}
+				i++;
 			}
 			nec.taskFlag = false;
 		}
@@ -116,17 +115,23 @@ bool irNecData()
 }
 bool irNecDecode()
 {
-	uint8_t decode_temp = 0;
-	for (uint8_t j=0; j<4; j++)
+	uint8_t i = 0;
+	uint8_t j = 0;
+	bool isEnd = false;
+	while(!isEnd)
 	{
-		for (uint8_t i=0; i<8; i++)
+		for (j=0;j<4;j++)
 		{
-			decode_temp = i << (nec.data[i]&0x01);
+			for (i=0;i<4;i++)
+			{
+				nec.decoded[j] = 1<<(nec.data[i] * 2);
+			}
 		}
-		nec.decoded[j] = decode_temp;
+
+		if (nec.decoded[0] == ~nec.decoded[1] && nec.decoded[2] == ~nec.decoded[3])
+			isEnd = true;
+
+
 	}
-	if (nec.decoded[0] == ~nec.decoded[2] && nec.decoded[1] == ~nec.decoded[3])
-		return true;
-	else
-		return false;
+	return isEnd;
 }

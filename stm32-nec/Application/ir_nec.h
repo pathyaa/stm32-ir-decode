@@ -13,7 +13,7 @@
 #include "stm32f1xx_hal.h"
 #include <stdbool.h>
 
-#define MAX_NEC_CNT	33
+#define MAX_NEC_CNT 33
 
 extern TIM_HandleTypeDef htim2;
 extern DMA_HandleTypeDef hdma_tim2_ch1;
@@ -23,9 +23,7 @@ extern DMA_HandleTypeDef hdma_memtomem_dma1_channel1;
 typedef enum
 {
 		NEC_INIT,
-		NEC_ADDR,
-		NEC_DATA,
-		NEC_END,
+		NEC_FORMAT,
 		NEC_REPEAT
 }IR_Format;
 
@@ -39,7 +37,7 @@ typedef struct
 
 	uint16_t raw_capture[MAX_NEC_CNT];
 
-	uint16_t data[MAX_NEC_CNT/2];
+	uint8_t data[MAX_NEC_CNT];
 	uint8_t cap_cnt;
 	uint8_t decoded[4];
 	bool taskFlag;
