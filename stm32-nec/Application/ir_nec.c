@@ -34,8 +34,6 @@ void irNecStart()
 
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)nec.edge_falling, MAX_NEC_CNT);
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)nec.edge_rising, MAX_NEC_CNT);
-
-
 }
 
 void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
@@ -77,43 +75,58 @@ void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
 bool irNecTask()
 {
-	uint8_t i = 0;
-
-	if (nec.taskFlag)
+	if (irNecData())
 	{
-		for (nec.cap_cnt=0; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt++)
-		{
-			if (nec.edge_rising[nec.cap_cnt] < nec.edge_falling[nec.cap_cnt])
-			{
-				nec.raw_capture[nec.cap_cnt] = nec.edge_falling[nec.cap_cnt] - nec.edge_rising[nec.cap_cnt];
-			}
-			else
-			{
-				nec.raw_capture[nec.cap_cnt] = nec.edge_rising[nec.cap_cnt] - nec.edge_falling[nec.cap_cnt];
-			}
-		}
+		return irNecDecode();
 	}
-
-	for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt+=2)
-	{
-
-			if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
-			{
-				nec.data[i] = 1;
-			}
-			else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
-			{
-				nec.data[i] = 0;
-			}
-			i++;
-
-	}
-
-	nec.taskFlag = false;
-	return false;
 }
 
+bool irNecData()
+{
+	uint8_t i = 0;
+
+		if (nec.taskFlag)
+		{
+			for (nec.cap_cnt=0; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt++)
+			{
+				if (nec.edge_rising[nec.cap_cnt] < nec.edge_falling[nec.cap_cnt])
+				{
+					nec.raw_capture[nec.cap_cnt] = nec.edge_falling[nec.cap_cnt] - nec.edge_rising[nec.cap_cnt];
+				}
+				else
+				{
+					nec.raw_capture[nec.cap_cnt] = nec.edge_rising[nec.cap_cnt] - nec.edge_falling[nec.cap_cnt];
+				}
+			}
+			for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt+=2)
+			{
+					if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
+					{
+						nec.data[i] = 1;
+					}
+					else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
+					{
+						nec.data[i] = 0;
+					}
+					i++;
+			}
+			nec.taskFlag = false;
+		}
+	return true;
+}
 bool irNecDecode()
 {
-
+	uint8_t decode_temp = 0;
+	for (uint8_t j=0; j<4; j++)
+	{
+		for (uint8_t i=0; i<8; i++)
+		{
+			decode_temp = i << (nec.data[i]&0x01);
+		}
+		nec.decoded[j] = decode_temp;
+	}
+	if (nec.decoded[0] == ~nec.decoded[2] && nec.decoded[1] == ~nec.decoded[3])
+		return true;
+	else
+		return false;
 }
