@@ -13,7 +13,7 @@
 #include "stm32f1xx_hal.h"
 #include <stdbool.h>
 
-#define MAX_NEC_CNT	32
+#define MAX_NEC_CNT	33
 
 extern TIM_HandleTypeDef htim2;
 extern DMA_HandleTypeDef hdma_tim2_ch1;
@@ -53,4 +53,6 @@ void irNecStart();
 bool irNecDecode();
 
 bool irNecTask();
+
+bool irNecData();
 #endif /* IR_NEC_H_ */
