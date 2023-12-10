@@ -9,6 +9,7 @@
 
 NEC nec =
 {
+	.isError = false,
 	.taskFlag = false,
 	.cap_cnt = 0,
 	.startL = 0,
@@ -19,7 +20,20 @@ NEC nec =
 	.data = {0,},
 	.state = NEC_INIT
 };
-
+void irNecErrorHandler()
+{
+	if (nec.isError)
+	{
+		memset(nec.edge_falling, 0, sizeof(nec.edge_falling));
+		memset(nec.edge_rising, 0, sizeof(nec.edge_rising));
+		nec.startH = 0;
+		nec.startL = 0;
+		nec.state = NEC_INIT;
+		HAL_TIM_IC_Stop_DMA(&htim2, TIM_CHANNEL_1);
+		HAL_TIM_IC_Stop_DMA(&htim2, TIM_CHANNEL_2);
+		nec.isError = false;
+	}
+}
 void irNecInit()
 {
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)&nec.startH, 1);
@@ -36,7 +50,7 @@ void irNecStart()
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)nec.edge_rising, MAX_NEC_CNT);
 }
 
-void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 
 	if (htim == &htim2)
@@ -50,13 +64,13 @@ void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 				{
 					if (nec.startH > 4400 && nec.startL > 9000)
 					{
-							irNecStart();
+						irNecStart();
 					}
 				}
 				else
 				{
-						HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)&nec.startH, 1);
-						HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)&nec.startL, 1);
+					isError = true;
+					nec.errCallback = irNecErrorHandler;
 				}
 				TIM2->CNT = 0;
 			}
@@ -87,37 +101,38 @@ bool irNecData()
 {
 	uint8_t i = 0;
 
-		if (nec.taskFlag)
+	if (nec.taskFlag)
+	{
+		for (nec.cap_cnt=0; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt++)
 		{
-			for (nec.cap_cnt=0; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt++)
+			if (nec.edge_rising[nec.cap_cnt] < nec.edge_falling[nec.cap_cnt])
 			{
-				if (nec.edge_rising[nec.cap_cnt] < nec.edge_falling[nec.cap_cnt])
-				{
-					nec.raw_capture[nec.cap_cnt] = nec.edge_falling[nec.cap_cnt] - nec.edge_rising[nec.cap_cnt];
-				}
-				else
-				{
-					nec.raw_capture[nec.cap_cnt] = nec.edge_rising[nec.cap_cnt] - nec.edge_falling[nec.cap_cnt];
-				}
+				nec.raw_capture[nec.cap_cnt] = nec.edge_falling[nec.cap_cnt] - nec.edge_rising[nec.cap_cnt];
 			}
-			for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt+=2)
+			else
 			{
-					if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
-					{
-						nec.data[i] = 1;
-					}
-					else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
-					{
-						nec.data[i] = 0;
-					}
-					i++;
+				nec.raw_capture[nec.cap_cnt] = nec.edge_rising[nec.cap_cnt] - nec.edge_falling[nec.cap_cnt];
 			}
-			nec.taskFlag = false;
 		}
+
+		for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt+=2)
+		{
+			if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
+			{
+				nec.data[i] = 1;
+			}
+			else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
+			{
+				nec.data[i] = 0;
+			}
+			i++;
+		}
+		nec.taskFlag = false;
+	}
 	return false;
 }
 bool irNecDecode()
 {
-
+	
 	return true;
 }
