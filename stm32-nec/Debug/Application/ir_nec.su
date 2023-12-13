@@ -3,4 +3,4 @@
 ../Application/ir_nec.c:40:6:HAL_TIM_IC_CaptureCallback	16	static
 ../Application/ir_nec.c:77:6:irNecTask	8	static
 ../Application/ir_nec.c:83:6:irNecData	16	static
-../Application/ir_nec.c:116:6:irNecDecode	16	static
+../Application/ir_nec.c:114:6:irNecDecode	16	static

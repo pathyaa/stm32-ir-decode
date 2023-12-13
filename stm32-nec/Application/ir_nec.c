@@ -9,7 +9,6 @@
 
 NEC nec =
 {
-	.isError = false,
 	.taskFlag = false,
 	.cap_cnt = 0,
 	.startL = 0,
@@ -20,20 +19,7 @@ NEC nec =
 	.data = {0,},
 	.state = NEC_INIT
 };
-void irNecErrorHandler()
-{
-	if (nec.isError)
-	{
-		memset(nec.edge_falling, 0, sizeof(nec.edge_falling));
-		memset(nec.edge_rising, 0, sizeof(nec.edge_rising));
-		nec.startH = 0;
-		nec.startL = 0;
-		nec.state = NEC_INIT;
-		HAL_TIM_IC_Stop_DMA(&htim2, TIM_CHANNEL_1);
-		HAL_TIM_IC_Stop_DMA(&htim2, TIM_CHANNEL_2);
-		nec.isError = false;
-	}
-}
+
 void irNecInit()
 {
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)&nec.startH, 1);
@@ -51,7 +37,7 @@ void irNecStart()
 	HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)nec.edge_rising, MAX_NEC_CNT);
 }
 
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+void	HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 
 	if (htim == &htim2)
@@ -65,13 +51,13 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 				{
 					if (nec.startH > 4400 && nec.startL > 9000)
 					{
-						irNecStart();
+							irNecStart();
 					}
 				}
 				else
 				{
-					isError = true;
-					nec.errCallback = irNecErrorHandler;
+						HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)&nec.startH, 1);
+						HAL_TIM_IC_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)&nec.startL, 1);
 				}
 				TIM2->CNT = 0;
 			}
@@ -91,15 +77,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 bool irNecTask()
 {
 	if (irNecData())
-<<<<<<< HEAD:stm32-nec/Source/Application/ir_nec.c
-	{
-		irNecDecode();
-	}
-
-	return true;
-=======
 	return irNecDecode();
->>>>>>> 3b1d541bb81b4484fb4343d26d5d41130c5226ca:stm32-nec/Application/ir_nec.c
 }
 
 bool irNecData()
@@ -118,9 +96,7 @@ bool irNecData()
 				{
 					nec.raw_capture[nec.cap_cnt] = nec.edge_rising[nec.cap_cnt] - nec.edge_falling[nec.cap_cnt];
 				}
-			}
-			for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT+1; nec.cap_cnt+=2)
-			{
+
 				if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
 				{
 					nec.data[i] = 1;
@@ -133,51 +109,37 @@ bool irNecData()
 			}
 			nec.taskFlag = false;
 		}
-<<<<<<< HEAD:stm32-nec/Source/Application/ir_nec.c
-
-		for (nec.cap_cnt=1; nec.cap_cnt < MAX_NEC_CNT; nec.cap_cnt+=2)
-		{
-			if (nec.raw_capture[nec.cap_cnt] > 1600 && nec.raw_capture[nec.cap_cnt] < 1700)
-			{
-				nec.data[i] = 1;
-			}
-			else if (nec.raw_capture[nec.cap_cnt] > 500 && nec.raw_capture[nec.cap_cnt] < 600)
-			{
-				nec.data[i] = 0;
-			}
-			i++;
-		}
-		nec.taskFlag = false;
-	}
-	return false;
-}
-bool irNecDecode()
-{
-	
-	return true;
-=======
 	return true;
 }
 bool irNecDecode()
 {
 	uint8_t i = 0;
 	uint8_t j = 0;
+	uint16_t check = 0;
 	bool isEnd = false;
 	while(!isEnd)
 	{
-		for (j=0;j<4;j++)
+
+		for (j=0; j<4; j++)
 		{
-			for (i=0;i<4;i++)
+			for (i=8*j; i<(8*j+8); i++)
 			{
-				nec.decoded[j] = 1<<(nec.data[i] * 2);
+//				nec.decoded[j] = (i%8+1)<< nec.data[i];
+				nec.decoded[j] <<= nec.data[i] << (i%8);
+//				nec.decoded[j] <<= nec.data[i] << (8%(i+1));
+//				nec.decoded[j] = (8%(i+1)) << nec.data[i];
 			}
 		}
 
-		if (nec.decoded[0] == ~nec.decoded[1] && nec.decoded[2] == ~nec.decoded[3])
+		if ((nec.decoded[0]) == (~nec.decoded[1]) && (nec.decoded[2]) == (~nec.decoded[3]))
+		{
 			isEnd = true;
-
-
+			break;
+		}
+		else
+		{
+			check++;
+		}
 	}
 	return isEnd;
->>>>>>> 3b1d541bb81b4484fb4343d26d5d41130c5226ca:stm32-nec/Application/ir_nec.c
 }
