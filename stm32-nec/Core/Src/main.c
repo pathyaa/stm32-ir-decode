@@ -63,7 +63,11 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int __io_putchar(int ch)
+{
+	HAL_UART_Transmit(&huart2, &ch, 1, 1900);
+	return ch;
+}
 /* USER CODE END 0 */
 
 /**
@@ -101,12 +105,22 @@ int main(void)
   irNecInit();
   while(!nec.taskFlag);
   irNecTask();
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  printf("IR DECODED!!\r\n");
+	  printf("NEC.decoded[0] : %x\r\n", (uint8_t)nec.decoded[0]);
+	  printf("NEC.decoded[1] : %x\r\n", (uint8_t)nec.decoded[1]);
+	  printf("NEC.decoded[2] : %x\r\n", (uint8_t)nec.decoded[2]);
+	  printf("NEC.decoded[3] : %x\r\n", (uint8_t)nec.decoded[3]);
+	  memset(nec.decoded, 0, sizeof(nec.decoded[0]));
+
+	  HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 

@@ -113,33 +113,35 @@ bool irNecData()
 }
 bool irNecDecode()
 {
-	uint8_t i = 0;
-	uint8_t j = 0;
-	uint16_t check = 0;
+	volatile int8_t i = 0;
+	volatile int8_t j = 0;
 	bool isEnd = false;
 	while(!isEnd)
 	{
 
 		for (j=0; j<4; j++)
 		{
+			if (nec.decoded[0] == ~(nec.decoded[1]) && nec.decoded[2] == ~(nec.decoded[3]))
+			{
+				isEnd = true;
+				return true;
+
+
+
+
+
+
+
+			}
 			for (i=8*j; i<(8*j+8); i++)
 			{
 //				nec.decoded[j] = (i%8+1)<< nec.data[i];
-				nec.decoded[j] <<= nec.data[i] << (i%8);
+				nec.decoded[j] += (nec.data[i] << (8*j+7-i));
 //				nec.decoded[j] <<= nec.data[i] << (8%(i+1));
 //				nec.decoded[j] = (8%(i+1)) << nec.data[i];
 			}
-		}
 
-		if ((nec.decoded[0]) == (~nec.decoded[1]) && (nec.decoded[2]) == (~nec.decoded[3]))
-		{
-			isEnd = true;
-			break;
-		}
-		else
-		{
-			check++;
 		}
 	}
-	return isEnd;
+
 }
