@@ -61,8 +61,8 @@ all: main-build
 main-build: stm32-nec-fixed.elf secondary-outputs
 
 # Tool invocations
-stm32-nec-fixed.elf stm32-nec-fixed.map: $(OBJS) $(USER_OBJS) D:\home\stm32\cubeide\stm32-nec-fixed\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32-nec-fixed.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\home\stm32\cubeide\stm32-nec-fixed\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-nec-fixed.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+stm32-nec-fixed.elf stm32-nec-fixed.map: $(OBJS) $(USER_OBJS) D:\workspace\home\src\stm32-nec\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "stm32-nec-fixed.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\workspace\home\src\stm32-nec\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-nec-fixed.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
