@@ -13,6 +13,13 @@ extern DMA_HandleTypeDef hdma_tim2_ch1;
 extern DMA_HandleTypeDef hdma_tim2_ch2_ch4;
 extern UART_HandleTypeDef huart2;
 
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
+
+
 
 typedef enum
 {
@@ -43,10 +50,10 @@ typedef struct
 	IR_Format state;
 } NEC;
 
-bool irInit(IR_Format cur_state);
+void irInit(IR_Format cur_state);
 void irReset(void);
 void irStart(void);
 void irGetData(void);
 void irDataDecode(void);
-bool irTask(void);
+void irTask(void);
 #endif /* IR_NEC_H_ */

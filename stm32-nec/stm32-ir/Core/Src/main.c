@@ -98,7 +98,8 @@ int main(void)
   MX_TIM2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  irInit(NEC_INIT);
+  nec.isInit = true;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -106,6 +107,8 @@ int main(void)
   while (1)
   {
 	irTask();
+
+
 
     /* USER CODE END WHILE */
 

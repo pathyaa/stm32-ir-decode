@@ -3,6 +3,12 @@
 
 static TIM_HandleTypeDef *used_timer = &htim2;
 
+PUTCHAR_PROTOTYPE
+{
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  return ch;
+}
+
 NEC nec =
 {
 	.repeatCheckH = {0,},
@@ -20,11 +26,8 @@ NEC nec =
 };
 
 
-bool irInit(IR_Format set_state)
+void irInit(IR_Format set_state)
 {
-	if (nec.state != set_state)
-		return false;
-
 	switch(set_state)
 	{
 		case NEC_INIT :
@@ -39,7 +42,6 @@ bool irInit(IR_Format set_state)
 
 		case NEC_FORMAT :
 
-			nec.state = set_state;
 
 			hdma_tim2_ch1.Init.Mode = DMA_CIRCULAR;
 			hdma_tim2_ch2_ch4.Init.Mode = DMA_CIRCULAR;
@@ -50,17 +52,13 @@ bool irInit(IR_Format set_state)
 		break;
 
 		case NEC_REPEAT :
+//
+//			HAL_TIM_IC_Stop_DMA(used_timer, TIM_CHANNEL_1);
+//			HAL_TIM_IC_Stop_DMA(used_timer, TIM_CHANNEL_2);
+//
+//			HAL_TIM_IC_Start_DMA(used_timer, TIM_CHANNEL_1, (uint32_t*)nec.repeatCheckL, 2);
+//			HAL_TIM_IC_Start_DMA(used_timer, TIM_CHANNEL_2, (uint32_t*)nec.repeatCheckH, 2);
 
-			HAL_TIM_IC_Stop_DMA(used_timer, TIM_CHANNEL_1);
-			HAL_TIM_IC_Stop_DMA(used_timer, TIM_CHANNEL_2);
-
-			HAL_TIM_IC_Start_DMA(used_timer, TIM_CHANNEL_1, (uint32_t*)nec.repeatCheckL, 2);
-			HAL_TIM_IC_Start_DMA(used_timer, TIM_CHANNEL_2, (uint32_t*)nec.repeatCheckH, 2);
-
-			break;
-
-		default :
-			return false;
 			break;
 	}
 }
@@ -83,6 +81,11 @@ void irReset()
 	memset(nec.raw_capture, 0, sizeof(uint16_t) * MAX_NEC_PACKET_CNT);
 	memset(nec.data, 0, MAX_NEC_PACKET_CNT-1);
 	memset(nec.decoded, 0, 4);
+	hdma_tim2_ch1.Init.Mode = DMA_NORMAL;
+	hdma_tim2_ch2_ch4.Init.Mode = DMA_NORMAL;
+
+	irInit(NEC_INIT);
+	nec.isInit = true;
 
 }
 
@@ -92,8 +95,9 @@ void irStart()
 	{
 		if (nec.startL)
 		{
-			if ((nec.startH > 4300 && nec.startH < 4700) && (nec.startL > 8800 && nec.startL < 9200))
+			if (nec.startH > 4300 && nec.startH < 4700 && nec.startL > 8800 && nec.startL < 9200)
 			{
+				nec.state = NEC_FORMAT;
 				irInit(NEC_FORMAT);
 			}
 		}
@@ -109,7 +113,7 @@ void irStart()
 		TIM2->CNT = 0;
 	}
 
-	nec.taskFlag = true;
+
 }
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
@@ -122,16 +126,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			break;
 
 			case NEC_FORMAT :
-				if (nec.taskFlag != true)
-				{
-					nec.taskFlag = true;
-				}
-			break;
-
-			case NEC_REPEAT :
-
-
-
+				nec.taskFlag = true;
 			break;
 		}
 	}
@@ -161,7 +156,7 @@ void irGetData()
 		}
 		i++;
 	}
-	nec.taskFlag = false;
+
 }
 
 
@@ -194,49 +189,29 @@ void irShowDecoded()
 {
 	for (uint8_t txIdx=0; txIdx < 4; txIdx++)
 	{
-		HAL_UART_Transmit(&huart2, "decoded : ", sizeof("decoded : "), 100);
-		HAL_UART_Transmit(&huart2, &nec.decoded[txIdx], 1, 100);
-		HAL_UART_Transmit(&huart2, "\r\n", sizeof("\r\n"), 100);
+		printf("decoded[%d] : 0x%x\r\n", txIdx, (uint8_t)nec.decoded[txIdx]);
 	}
 
 }
 
-bool irTask()
+void irTask()
 {
-	uint8_t rxBuf=0;
-
 	// Task Lock : only go into isInit == false
-	if (!nec.isInit)
+
+	if (nec.taskFlag && nec.isInit)
 	{
-		irInit(NEC_INIT);
-		nec.isInit = true;
-
-		if (nec.taskFlag && nec.isInit)
-		{
-			irGetData();
-			irDataDecode();
-			irInit(NEC_REPEAT);
-			HAL_UART_Receive_DMA(&huart2, rxBuf, 1);
-			do
-			{
-
-				// reset flag rx
-
-				irShowDecoded();
-				irReset();
-				break;
-
-			} while(1);
-							// Task unlock
-	//			isInit = false;
-
-		}
-		else
-		{
-			nec.isInit = false;
-		}
+		irGetData();
+		irDataDecode();
+//		irInit(NEC_REPEAT);
+//		HAL_UART_Receive_DMA(&huart2, rxBuf, 1);
+		irShowDecoded();
+		nec.isInit = false;
+		irReset();
 	}
-
+	else
+	{
+		irReset();
+	}
 }
 
 
