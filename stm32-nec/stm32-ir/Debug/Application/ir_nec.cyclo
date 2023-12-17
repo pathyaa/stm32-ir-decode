@@ -1,0 +1,8 @@
+../Application/ir_nec.c:23:6:irInit	6
+../Application/ir_nec.c:69:6:irReset	1
+../Application/ir_nec.c:89:6:irStart	8
+../Application/ir_nec.c:114:6:HAL_TIM_IC_CaptureCallback	7
+../Application/ir_nec.c:139:6:irGetData	8
+../Application/ir_nec.c:168:6:irDataDecode	6
+../Application/ir_nec.c:193:6:irShowDecoded	2
+../Application/ir_nec.c:204:6:irTask	4
