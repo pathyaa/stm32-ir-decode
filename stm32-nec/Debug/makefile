@@ -35,34 +35,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := stm32-nec-fixed
+BUILD_ARTIFACT_NAME := stm32-nec-fixed-ver2
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-stm32-nec-fixed.elf \
+stm32-nec-fixed-ver2.elf \
 
 MAP_FILES += \
-stm32-nec-fixed.map \
+stm32-nec-fixed-ver2.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-stm32-nec-fixed.list \
+stm32-nec-fixed-ver2.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: stm32-nec-fixed.elf secondary-outputs
+main-build: stm32-nec-fixed-ver2.elf secondary-outputs
 
 # Tool invocations
-stm32-nec-fixed.elf stm32-nec-fixed.map: $(OBJS) $(USER_OBJS) D:\home\stm32\cubeide\stm32-nec-fixed\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32-nec-fixed.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\home\stm32\cubeide\stm32-nec-fixed\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-nec-fixed.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+stm32-nec-fixed-ver2.elf stm32-nec-fixed-ver2.map: $(OBJS) $(USER_OBJS) D:\home\stm32-workspace\cubeide\stm32-nec-fixed-ver2\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "stm32-nec-fixed-ver2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\home\stm32-workspace\cubeide\stm32-nec-fixed-ver2\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-nec-fixed-ver2.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -71,14 +71,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-stm32-nec-fixed.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "stm32-nec-fixed.list"
+stm32-nec-fixed-ver2.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "stm32-nec-fixed-ver2.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout stm32-nec-fixed.elf stm32-nec-fixed.list stm32-nec-fixed.map
+	-$(RM) default.size.stdout stm32-nec-fixed-ver2.elf stm32-nec-fixed-ver2.list stm32-nec-fixed-ver2.map
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

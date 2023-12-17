@@ -1,6 +1,7 @@
-../Application/ir_nec.c:23:6:irNecInit	8	static
-../Application/ir_nec.c:29:6:irNecStart	8	static
-../Application/ir_nec.c:40:6:HAL_TIM_IC_CaptureCallback	16	static
-../Application/ir_nec.c:77:6:irNecTask	8	static
-../Application/ir_nec.c:83:6:irNecData	16	static
-../Application/ir_nec.c:114:6:irNecDecode	16	static
+../Application/ir_nec.c:27:6:irInit	32	static
+../Application/ir_nec.c:74:6:irReset	8	static
+../Application/ir_nec.c:87:6:irStart	8	static
+../Application/ir_nec.c:110:6:HAL_TIM_IC_CaptureCallback	16	static
+../Application/ir_nec.c:134:6:irGetData	16	static
+../Application/ir_nec.c:165:6:irDataDecode	16	static
+../Application/ir_nec.c:187:6:irTask	8	static

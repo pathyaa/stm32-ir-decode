@@ -13,18 +13,22 @@
 #include "stm32f1xx_hal.h"
 #include <stdbool.h>
 #include <string.h>
+
 #define MAX_NEC_CNT 33
 
 extern TIM_HandleTypeDef htim2;
 extern DMA_HandleTypeDef hdma_tim2_ch1;
 extern DMA_HandleTypeDef hdma_tim2_ch2_ch4;
-extern DMA_HandleTypeDef hdma_memtomem_dma1_channel1;
+extern UART_HandleTypeDef huart2;
+
 
 typedef enum
 {
-		NEC_INIT,
-		NEC_FORMAT,
-		NEC_REPEAT
+	NEC_INIT,
+	NEC_FORMAT,
+	NEC_REPEAT,
+	NEC_RESET,
+	NEC_END
 }IR_Format;
 
 typedef struct
@@ -38,19 +42,16 @@ typedef struct
 	uint16_t raw_capture[MAX_NEC_CNT];
 
 	uint8_t data[MAX_NEC_CNT-1];
-	uint8_t cap_cnt;
+	volatile uint8_t cap_cnt;
 	int8_t decoded[4];
 	bool taskFlag;
 	IR_Format state;
 } NEC;
 
-void irNecInit();
-
-void irNecStart();
-
-bool irNecDecode();
-
-bool irNecTask();
-
-bool irNecData();
+bool irInit(IR_Format cur_state);
+void irReset(void);
+void irStart(void);
+void irGetData(void);
+void irDataDecode(void);
+bool irTask(void);
 #endif /* IR_NEC_H_ */
