@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>stm32-nec-fixed-ver3</name>
+	<name>stm32_ir_decoder_NEC</name>
 	<comment></comment>
 	<projects>
 	</projects>

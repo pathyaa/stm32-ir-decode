@@ -12,7 +12,7 @@ RM := rm -rf
 -include Drivers/STM32F1xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
--include Application/subdir.mk
+-include Application/NEC/subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -35,34 +35,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := stm32-nec-fixed-ver3
+BUILD_ARTIFACT_NAME := stm32_ir_decoder_NEC
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-stm32-nec-fixed-ver3.elf \
+stm32_ir_decoder_NEC.elf \
 
 MAP_FILES += \
-stm32-nec-fixed-ver3.map \
+stm32_ir_decoder_NEC.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-stm32-nec-fixed-ver3.list \
+stm32_ir_decoder_NEC.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: stm32-nec-fixed-ver3.elf secondary-outputs
+main-build: stm32_ir_decoder_NEC.elf secondary-outputs
 
 # Tool invocations
-stm32-nec-fixed-ver3.elf stm32-nec-fixed-ver3.map: $(OBJS) $(USER_OBJS) D:\home\stm32-workspace\cubeide\stm32-nec-fixed-ver3\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "stm32-nec-fixed-ver3.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\home\stm32-workspace\cubeide\stm32-nec-fixed-ver3\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32-nec-fixed-ver3.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+stm32_ir_decoder_NEC.elf stm32_ir_decoder_NEC.map: $(OBJS) $(USER_OBJS) D:\home\stm32-workspace\git\stm32-nec\stm32-ir\STM32F103C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "stm32_ir_decoder_NEC.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\home\stm32-workspace\git\stm32-nec\stm32-ir\STM32F103C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="stm32_ir_decoder_NEC.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -71,14 +71,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-stm32-nec-fixed-ver3.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "stm32-nec-fixed-ver3.list"
+stm32_ir_decoder_NEC.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "stm32_ir_decoder_NEC.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout stm32-nec-fixed-ver3.elf stm32-nec-fixed-ver3.list stm32-nec-fixed-ver3.map
+	-$(RM) default.size.stdout stm32_ir_decoder_NEC.elf stm32_ir_decoder_NEC.list stm32_ir_decoder_NEC.map
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)

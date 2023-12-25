@@ -1,0 +1,8 @@
+../Application/NEC/NEC.c:11:6:NEC_Init	16	static
+../Application/NEC/NEC.c:27:6:NEC_TIM_IC_CaptureCallback	24	static
+../Application/NEC/NEC.c:80:6:NEC_Read	16	static
+../Application/NEC/NEC.c:87:6:NEC_Reset	16	static
+../Application/NEC/NEC.c:94:6:myNecDecodedCallback	128	static
+../Application/NEC/NEC.c:103:6:myNecErrorCallback	16	static
+../Application/NEC/NEC.c:110:6:myNecRepeatCallback	16	static
+../Application/NEC/NEC.c:117:6:HAL_TIM_IC_CaptureCallback	16	static
