@@ -1,0 +1,8 @@
+../Application/NEC/NEC.c:11:6:NEC_Init	1
+../Application/NEC/NEC.c:29:6:NEC_TIM_IC_CaptureCallback	15
+../Application/NEC/NEC.c:104:6:NEC_Read	1
+../Application/NEC/NEC.c:111:6:NEC_Reset	1
+../Application/NEC/NEC.c:118:6:myNecDecodedCallback	1
+../Application/NEC/NEC.c:124:6:myNecErrorCallback	1
+../Application/NEC/NEC.c:131:6:myNecRepeatCallback	1
+../Application/NEC/NEC.c:138:6:HAL_TIM_IC_CaptureCallback	2
