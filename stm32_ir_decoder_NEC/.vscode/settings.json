@@ -1,0 +1,6 @@
+{
+    "cortex-debug.armToolchainPath": "",
+    "files.associations": {
+        "nec.h": "c"
+    }
+}

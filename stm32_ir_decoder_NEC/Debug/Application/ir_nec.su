@@ -1,0 +1,9 @@
+../Application/ir_nec.c:6:1:__io_putchar	16	static
+../Application/ir_nec.c:29:6:irInit	24	static
+../Application/ir_nec.c:67:6:irReset	8	static
+../Application/ir_nec.c:92:6:irStart	8	static
+../Application/ir_nec.c:118:6:HAL_TIM_IC_CaptureCallback	16	static
+../Application/ir_nec.c:134:6:irGetData	16	static
+../Application/ir_nec.c:163:6:irDataDecode	16	static
+../Application/ir_nec.c:188:6:irShowDecoded	16	static
+../Application/ir_nec.c:197:6:irTask	8	static

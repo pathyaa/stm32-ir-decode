@@ -1,0 +1,2 @@
+../Application/NEC/NEC.c:46:6:nec	24	static
+../Application/NEC/NEC.c:149:6:HAL_TIM_IC_CaptureCallback	16	static

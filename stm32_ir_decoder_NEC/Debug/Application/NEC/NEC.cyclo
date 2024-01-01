@@ -1,0 +1,2 @@
+../Application/NEC/NEC.c:46:6:nec	19
+../Application/NEC/NEC.c:149:6:HAL_TIM_IC_CaptureCallback	2
