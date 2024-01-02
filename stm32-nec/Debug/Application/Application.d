@@ -1,4 +1,5 @@
-Application/NEC/NEC.o: ../Application/NEC/NEC.c ../Application/NEC/NEC.h \
+Application/Application.o: ../Application/Application.c \
+ ../Application/Application.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  ../Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -24,8 +25,10 @@ Application/NEC/NEC.o: ../Application/NEC/NEC.c ../Application/NEC/NEC.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-../Application/NEC/NEC.h:
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
+ D:/home/stm32-workspace/cubeide/stm32_ir_decoder_NEC/Application/NEC/NEC.h \
+ D:/home/stm32-workspace/cubeide/stm32_ir_decoder_NEC/Application/Application.h
+../Application/Application.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
 ../Core/Inc/stm32f1xx_hal_conf.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h:
@@ -52,3 +55,5 @@ Application/NEC/NEC.o: ../Application/NEC/NEC.c ../Application/NEC/NEC.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+D:/home/stm32-workspace/cubeide/stm32_ir_decoder_NEC/Application/NEC/NEC.h:
+D:/home/stm32-workspace/cubeide/stm32_ir_decoder_NEC/Application/Application.h:

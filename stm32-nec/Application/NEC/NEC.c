@@ -8,137 +8,143 @@
 
 #include "NEC.h"
 
-void NEC_Init(NEC* handle)
+NEC user_nec;
+
+TIM_HandleTypeDef *nec_timer = &htim2;
+
+bool isRepeat = false;
+bool isInit = false;
+bool isDecode = false;
+bool check_header = false;
+bool necResetFlag = false;
+
+void necInit(void)
 {
-	handle->timerHandle = &htim2;
-
-	handle->timerChannel = TIM_CHANNEL_1;
-	handle->timerChannelActive = HAL_TIM_ACTIVE_CHANNEL_1;
-
-	handle->timingBitBoundary = 1650;
-	handle->timingAgcBoundary = 13500;
-	handle->type = NEC_NOT_EXTENDED;
-
-	handle->NEC_DecodedCallback = myNecDecodedCallback;
-	handle->NEC_ErrorCallback = myNecErrorCallback;
-	handle->NEC_RepeatCallback = myNecRepeatCallback;
-
-	NEC_Read(handle);
-}
-
-void NEC_TIM_IC_CaptureCallback(NEC* handle)
-{
-	switch(handle->state)
-	{
-	case NEC_INIT :
-		
-		uint16_t header_time = handle->rawTimerData[1];
-		// Repeat length = 11.825ms
-		if (header_time < 12000 && header_time > 11000)
-		{
-			handle->state = NEC_OK;
-			handle->NEC_RepeatCallback();
-		}
-		else if (header_time < AGC_START_TIME + 500 && header_time > AGC_START_TIME - 500)
-		{
-			handle->state = NEC_AGC_OK;
-			HAL_TIM_IC_Start_DMA(handle->timerHandle, handle->timerChannel,
-					(uint32_t*) handle->rawTimerData, 32);
-		}
-		else
-		{
-			handle->state = NEC_AGC_FAIL;
-		}
-		break;
-
-	case NEC_AGC_OK :
-		
-		for (uint8_t pos = 0; pos < 32; pos++)
-		{
-			uint16_t time = handle->rawTimerData[pos];
-			if (time > BIT_BOUNDARY)
-			{
-				handle->decoded[pos / 8] |= 1 << (pos % 8);
-			}
-			else
-			{
-				handle->decoded[pos / 8] &= ~(1 << (pos % 8));
-			}
-		}
-
-		uint8_t valid = 1;
-
-		uint8_t naddr = ~handle->decoded[1];
-		uint8_t ncmd = ~handle->decoded[3];
-		
-		if ((handle->type == NEC_NOT_EXTENDED && handle->decoded[0] != naddr) || handle->decoded[2] != ncmd)
-		{
-			valid = 0;
-			handle->state = NEC_AGC_FAIL;
-		}
-		else
-		{
-			handle->state = NEC_OK;
-		}
-
-		if (valid)
-			handle->NEC_DecodedCallback(handle->decoded[0], handle->decoded[2]);
-		else
-			handle->NEC_ErrorCallback();	
-
-		break;
-
-		case NEC_OK :
-			handle->NEC_DecodedCallback(handle->decoded[0], handle->decoded[2]);
-		break;
-
-		case NEC_FAIL     :
-		case NEC_AGC_FAIL :
-
-			NEC_Reset(handle);
-		
-		break;
-	}
-}
-
-void NEC_Read(NEC* handle)
-{
-    handle->state = NEC_INIT;
-    HAL_TIM_IC_Start_DMA(handle->timerHandle, handle->timerChannel,
-            (uint32_t*) handle->rawTimerData, 2);
-}
-
-void NEC_Reset(NEC* handle)
-{
-	memset(handle->rawTimerData, 0, sizeof(uint16_t) * 32);
-	memset(handle->decoded, 0, sizeof(uint8_t) * 4);
-//	HAL_TIM_IC_Stop_DMA(handle->timerHandle, handle->timerChannel);
-	NEC_Read(handle);
-}
-void myNecDecodedCallback(uint8_t address, uint8_t cmd)
-{
-    printf("ADDR : 0x%x, DATA : 0x%x\r\n", address, cmd);
-    NEC_Read(&nec);
-}
-
-void myNecErrorCallback() {
-    char* msg = "Error!\n";
-    HAL_UART_Transmit_DMA(&huart2, (uint8_t*) msg, strlen(msg));
-
-    NEC_Reset(&nec);
-}
-
-void myNecRepeatCallback() {
-
-	printf("Repeated!!\r\n");
-
-    nec.NEC_DecodedCallback(nec.decoded[0], nec.decoded[2]);
+	user_nec.state = NEC_IDLE;
+	HAL_TIM_IC_Start_DMA(nec_timer, TIM_CHANNEL_1, (uint32_t*)user_nec.header, 2);
+	isInit = true;
+	printf("Wait for IR (NEC) Signal\r\n");
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
+
     if (htim == &htim2)
     {
-        NEC_TIM_IC_CaptureCallback(&nec);
+    	if (user_nec.state == NEC_IDLE)
+    	{
+    		uint16_t header_time = user_nec.header[1];
+    		if (header_time < AGC_START_TIME + 500 && header_time > AGC_START_TIME - 500)
+			{
+    			check_header = true;
+    			HAL_TIM_IC_Start_DMA(nec_timer, TIM_CHANNEL_1, (uint32_t*)user_nec.rawTimerData, 32);
+    			printf("start decode\r\n");
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+				user_nec.state = NEC_DECODE;
+			}
+    	}
+    	else if (user_nec.state == NEC_DECODE)
+    	{
+    		isDecode = true;
+			if (user_nec.repeat[1] > 11000)
+			{
+				isRepeat = true;
+				user_nec.state = NEC_REPEAT;
+			}
+    	}
     }
 }
+void nec(void)
+{
+	static uint32_t led_time = 0;
+
+	switch(user_nec.state)
+	{
+		case NEC_IDLE :
+			if (HAL_GetTick()-led_time >= 1000)
+			{
+				led_time = HAL_GetTick();
+				HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+			}
+		break;
+
+		case NEC_BEGIN :
+			if (check_header)
+			{
+				check_header = false;
+				user_nec.state = NEC_DECODE;
+				printf("nec state   	   : %s\r\n", user_nec.state == NEC_BEGIN ? "NEC_BEGIN" : "ERR");
+				printf("check header 	   : %s\r\n", user_nec.header[1] > AGC_START_TIME ? "Start Decoding" : "ERR");
+				printf("header 			   : %d\r\n", user_nec.header[1]);
+			}
+			
+		break;
+
+		case NEC_DECODE :
+			if (isDecode)
+			{
+				necDecode();
+			}
+			break;
+
+		case NEC_REPEAT :
+
+			if (isRepeat)
+			{
+				isRepeat = false;
+				printf("[Repeat] ADDR      : 0x%x\r\n", user_nec.decoded[0]);
+				printf("[Repeat] inv_ADDR  : 0x%x\r\n", user_nec.decoded[1]);
+				printf("[Repeat] DATA      : 0x%x\r\n", user_nec.decoded[2]);
+				printf("[Repeat] int_DATA  : 0x%x\r\n", user_nec.decoded[3]);
+			}
+			else
+			{
+				printf("nec initialize\r\n");
+				isInit = false;
+				check_header = false;
+				isDecode = false;
+				isRepeat = false;
+				user_nec.state = NEC_IDLE;
+			}
+			break;
+	}
+
+}
+
+
+void necDecode(void)
+{
+	for (uint8_t pos = 0; pos < 32; pos++)
+	{
+		uint16_t time = user_nec.rawTimerData[pos];
+		if (time > BIT1_BOUNDARY)
+		{
+			user_nec.decoded[pos / 8] |= 1 << (pos % 8);
+		}
+		else
+		{
+			user_nec.decoded[pos / 8] &= ~(1 << (pos % 8));
+		}
+	}
+
+	uint8_t addr = user_nec.decoded[0];
+	uint8_t naddr = user_nec.decoded[1];
+	uint8_t data = user_nec.decoded[2];
+	uint8_t ndata = user_nec.decoded[3];
+
+	isDecode = false;
+	printf("nec addr 	: 0x%x\r\n", addr);
+	printf("nec naddr 	: 0x%x\r\n", naddr);
+	printf("nec data 	: 0x%x\r\n", data);
+	printf("nec ndata 	: 0x%x\r\n", ndata);
+	
+
+	HAL_TIM_IC_Start_DMA(nec_timer, TIM_CHANNEL_1, (uint32_t*)user_nec.repeat, 2);
+
+	if ((addr == ~naddr) && (data == ~ndata))
+	{
+
+	}
+}
+
+

@@ -1,2 +1,4 @@
-../Application/NEC/NEC.c:46:6:nec	19
-../Application/NEC/NEC.c:149:6:HAL_TIM_IC_CaptureCallback	2
+../Application/NEC/NEC.c:21:6:necInit	1
+../Application/NEC/NEC.c:29:6:HAL_TIM_IC_CaptureCallback	7
+../Application/NEC/NEC.c:57:6:nec	11
+../Application/NEC/NEC.c:115:6:necDecode	3
