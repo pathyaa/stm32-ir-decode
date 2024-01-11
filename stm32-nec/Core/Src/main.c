@@ -66,12 +66,10 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int _write(int file, char* p, int len){
-	HAL_UART_Transmit(&huart2, p, len, 10);
-	return len;
-}
 
-extern NEC user_nec;
+
+extern bool check_repeat;
+extern bool get;
 /* USER CODE END 0 */
 
 /**
@@ -108,13 +106,27 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   necInit();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  nec();
+	 if (get)
+	 {
+		 necParsing();
+		 get = false;
+	 }
+	 if (check_repeat)
+	 {
+
+//		 HAL_Delay(40);
+//		 if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET)
+//		 {
+//			 printf("No Repeat\r\n");
+//		 }
+	 }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

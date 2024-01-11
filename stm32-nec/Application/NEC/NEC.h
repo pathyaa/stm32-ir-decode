@@ -2,10 +2,12 @@
 #define NEC_H_
 
 #include "stm32f1xx_hal.h"
+#include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
+
 
 // Header Low Time  : 9000 us
 // Header High Time : 4500 us
@@ -18,6 +20,7 @@
 #define BIT1_BOUNDARY	1650
 
 extern TIM_HandleTypeDef htim2;
+extern UART_HandleTypeDef huart2;
 
 typedef enum {
 	NEC_IDLE,
@@ -28,13 +31,7 @@ typedef enum {
 	NEC_REPEAT
 } NEC_STATE;
 
-typedef struct {
-	uint16_t header[2];
-    uint16_t rawTimerData[32];
-	uint16_t repeat[2];
-    uint8_t  decoded[4];
-    NEC_STATE state;
-} NEC;
+
 
 void necInit(void);
 void nec(void);
